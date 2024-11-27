@@ -13,6 +13,9 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": ["@clerk/nextjs", "@types/react", "@types/react-dom"],
+    "typeRoots": ["node_modules/@types", "node_modules"],
+
     "plugins": [
       {
         "name": "next"
@@ -22,6 +25,13 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/@types/**/*"
+  ],
+
   "exclude": ["node_modules"]
 }
