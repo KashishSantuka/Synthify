@@ -2,16 +2,28 @@
 
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
+import { useState, useEffect } from "react";
 import {
   Sheet,
-  SheetContent,
   SheetTrigger,
+  SheetContent,
   SheetTitle,
+  
 } from "@/components/ui/sheet";
 import Sidebar from "@/components/sidebar";
 // import { VisuallyHidden } from '@reach/visually-hidden';
 
 const MobileSidebar = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return null;
+  }
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -19,14 +31,9 @@ const MobileSidebar = () => {
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent
-        side="left"
-        className="p-0"
-        role="dialog"
-        aria-label="Sidebar Navigation"
-      >
-        
+      <SheetContent side="left" className="p-0 h-full w-full bg-[#111827] text-white">
         <SheetTitle></SheetTitle>
+
         <Sidebar />
       </SheetContent>
     </Sheet>
