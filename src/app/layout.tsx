@@ -5,6 +5,10 @@ import "./globals.css";
 
 import { Metadata } from "next";
 
+import  ToasterProvider  from "@/components/toaster-provider";
+
+import CrispProvider from "@/components/CrispProvider";
+
 export const metadata: Metadata = {
   title: "Synthify",
   description: "AI Platform",
@@ -27,11 +31,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider dynamic>
       <html lang="en">
+        <CrispProvider />
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <ToasterProvider />
           {children}
         </body>
       </html>

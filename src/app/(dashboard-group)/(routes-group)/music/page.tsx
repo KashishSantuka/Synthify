@@ -1,7 +1,7 @@
 "use client";
 
 import Heading from "@/components/ui/heading";
-import { Music } from "lucide-react";
+import { Play } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -9,15 +9,23 @@ import { Button } from "@/components/ui/button";
 import * as z from "zod";
 import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
-import formSchema from "./constant";
+import { formSchema, voices } from "./constant";
 import { useRouter } from "next/navigation";
+import { toast } from 'react-hot-toast';
 
 import { useState } from "react";
 import Empty from "@/components/Empty";
 import Loader from "@/components/Loader";
-import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+// import { cn } from "@/lib/utils";
 
-const MusicPage = () => {
+const AudioPage = () => {
   const router = useRouter();
   const [music, setMusic] = useState<string>();
 
@@ -25,33 +33,51 @@ const MusicPage = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       prompt: "",
+      voices: "Chris",
     },
   });
 
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log("Values:", values);
     console.log("Helllo kashish");
     try {
       setMusic(undefined);
-      const response = await axios.post("/api/music", values);
-      
-      setMusic(response.data.audio);
+
+      const response = await axios.post("/api/music", values, {
+        responseType: "blob",
+      });
+
+      console.log("Helllo kashish2");
+      console.log("AudioResponse:", response);
+
+      const audioUrl = URL.createObjectURL(response.data);
+
+      // Create an Audio element to play the audio
+      const audio = new Audio(audioUrl);
+      audio.play();
+
+      setMusic(audioUrl);
+
+      console.log("Setmusic", setMusic);
+
       form.reset();
     } catch (error) {
-      //TODO: Open Pro Model;
+      toast.error("Something wen wrong");
       console.log(error);
     } finally {
       router.refresh();
     }
   };
 
+  console.log("Music:", music);
   return (
     <div>
       <Heading
-        title="Music Generation"
-        description="Turn your promt into music"
-        icon={Music}
+        title="Audio Generation"
+        description="Turn your prompt into an Audio"
+        icon={Play}
         iconColor="text-emeral-500"
         bgColor="bg-emerald-500/10"
       />
@@ -70,10 +96,37 @@ const MusicPage = () => {
                       <Input
                         className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
                         disabled={isLoading}
-                        placeholder="Piano solo"
+                        placeholder="A hammer is hitting a wooden surface"
                         {...field}
                       />
                     </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="voices"
+                render={({ field }) => (
+                  <FormItem className="col-span-12 lg:col-span-2">
+                    <Select
+                      disabled={isLoading}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue defaultValue={field.value}></SelectValue>
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {voices.map((option) => (
+                          <SelectItem key={option.voice_id} value={option.name}>
+                            {option.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormItem>
                 )}
               />
@@ -95,7 +148,7 @@ const MusicPage = () => {
           {!music && !isLoading && <Empty label="No Music Generated" />}
           {music && (
             <audio controls className="w-full mt-8">
-              <source src={music}/>
+              <source src={music} />
             </audio>
           )}
         </div>
@@ -104,4 +157,4 @@ const MusicPage = () => {
   );
 };
 
-export default MusicPage;
+export default AudioPage;

@@ -16,8 +16,9 @@ import { useState } from "react";
 import Empty from "@/components/Empty";
 import Loader from "@/components/Loader";
 import { cn } from "@/lib/utils";
-import UserAvatar from "@/components/UserAvatar";
+// import UserAvatar from "@/components/UserAvatar";
 import BotAvatar from "@/components/BotAvatar";
+import { toast } from "react-hot-toast";
 // import messages from "./messages.ts";
 
 const ConversationPage = () => {
@@ -30,6 +31,14 @@ const ConversationPage = () => {
       prompt: "",
     },
   });
+
+
+  interface Message {
+    role: string;
+    content: {
+      parts: Array<{ text: string }>;
+    };
+  }
 
   const isLoading = form.formState.isSubmitting;
 
@@ -48,12 +57,22 @@ const ConversationPage = () => {
       const response = await axios.post("/api/conversation", {
         messages: newMessages,
       });
+
+      if (!response) {
+        const error = {
+          message: "Didn't Receive The Response",
+          status: 400,
+        };
+
+        throw error;
+      }
+
       console.log("rawResponse:", response);
       console.log("response:", response.data.messages);
 
       const extractedMessages = response.data.messages
-        .filter((message: any) => message.role === "user") // Keep only messages with role "user"
-        .map((message: any) => {
+        .filter((message: Message) => message.role === "user") // Keep only messages with role "user"
+        .map((message: Message) => {
           return {
             role: message.role,
             content: message.content.parts[0]?.text, // Safely access the first part's text
@@ -72,7 +91,7 @@ const ConversationPage = () => {
 
       form.reset();
     } catch (error) {
-      //TODO: Open Pro Model;
+      toast.error("Something wen wrong");
       console.log(error);
     } finally {
       router.refresh();

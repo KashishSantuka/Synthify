@@ -14,7 +14,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Empty from "@/components/Empty";
 import Loader from "@/components/Loader";
-import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import Image from "next/image";
+import { toast } from "react-hot-toast";
+// import { cn } from "@/lib/utils";
 import {
   Select,
   SelectTrigger,
@@ -42,20 +45,41 @@ const ImagePage = () => {
     try {
       setImages([]);
 
+      console.log(values);
+
       const response = await axios.post("/api/image", values);
 
-      const urls = response.data.map((image: { url: string }) => image.url);
+      console.log("imageResponse:", response);
 
-      setImages(urls);
+      if (!response) {
+        const error = {
+          message: "Didn't Receive The Response",
+          status: 400,
+        };
+
+        throw error;
+      }
+
+      // const imageUrl = response.data.imageUrl;
+
+      const imageUrl = response.data.imageUrl.map(
+        (image: { url: string }) => image.url
+      );
+      console.log("Hello Kashish, How are you!");
+      console.log("urls:", imageUrl);
+
+      setImages([imageUrl]);
+
       form.reset();
     } catch (error) {
-      //TODO: Open Pro Model;
+      toast.error("Something wen wrong");
       console.log(error);
     } finally {
       router.refresh();
     }
   };
 
+  console.log("Imagesss:", images);
   return (
     <div>
       <Heading
@@ -159,7 +183,15 @@ const ImagePage = () => {
           {images.length === 0 && !isLoading && (
             <Empty label="No Images Generated" />
           )}
-          <div>Images will be rendered here</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
+            {images.map((src) => (
+              <Card key={src} className="rounded-lg overflow-hidden">
+                <div className="relative aspect-square">
+                  <Image alt="Image" fill src={src} />
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -79,6 +79,7 @@ export default function DashBoard() {
                       tool.bgColor
                     )}
                   >
+                    <p className="text-emerald-500"></p>
                     <tool.icon className={`w-6 h-6 ${tool.color}`} />
                   </div>
 

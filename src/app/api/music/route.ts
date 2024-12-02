@@ -1,51 +1,115 @@
-import { getSession } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-import Replicate from "replicate";
 import dotenv from "dotenv";
+import { ElevenLabsClient } from "elevenlabs";
 
 dotenv.config();
 
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_KEY || "",
-});
+const client = new ElevenLabsClient({ apiKey: process.env.ELEVEN_KEY });
+
+console.log(client);
+
+if (!client) {
+  throw new Error("API Key not found");
+}
 
 export async function POST(req: Request) {
   try {
-    const session = await getSession(req);
-
-    const { userId } = session;
     const body = await req.json();
-    const { prompt } = body;
+    const { prompt, voices } = body;
 
-    if (!session || !session.userId) {
-      return NextResponse.json(
-        { error: "User not authenticated" },
-        { status: 401 }
+    // Check if voices and prompt are provided
+    if (!voices) {
+      return new Response(JSON.stringify({ error: "Voices is required" }), {
+        status: 400,
+      });
+    }
+
+    console.log("voices:", voices);
+
+    if (!prompt) {
+      return new Response(JSON.stringify({ error: "Prompt is required" }), {
+        status: 400,
+      });
+    }
+
+    console.log("Prompt:", prompt);
+
+    // Fetch all voices
+    const aiVoices = await client.voices.getAll();
+
+    console.log("AIVOICES:", aiVoices);
+    console.log("This line is working");
+
+    // Ensure aiVoices is not empty or undefined
+    if (!aiVoices || !aiVoices.voices || !Array.isArray(aiVoices.voices)) {
+      return new Response(
+        JSON.stringify({ error: "AI Voices are not available" }),
+        { status: 400 }
       );
     }
 
-    if (!prompt) {
-      return NextResponse.json({ error: "Promt is required" }, { status: 400 });
+    console.log("This line is working???");
+
+    // Find matching voice
+    const matchingVoice = aiVoices.voices.find(
+      (voice) => voice.name === voices
+    );
+
+    if (!matchingVoice) {
+      console.log("Matching Voices not match");
+      return new Response(JSON.stringify({ error: "Voice not found" }), {
+        status: 404,
+      });
     }
 
-    const input = {
-      prompt_b: "prompt",
-    };
+    console.log("After matching voice is not working ig");
+    console.log("MatchingVoices:", matchingVoice);
 
-    const output = await replicate.run(
-      "riffusion/riffusion:8cf61ea6c56afd61d8f5b9ffd14d7c216c0a93844ce2d82ac1c9ecc9c7f24e05",
-      { input }
+    // Generate audio if voice is found
+    const audioGeneration = await client.textToSpeech.convert(
+      matchingVoice.voice_id,
+      {
+        model_id: "eleven_multilingual_v2",
+        text: prompt,
+        voice_settings: {
+          stability: 0.1,
+          similarity_boost: 0.3,
+          style: 0.2,
+        },
+      }
     );
-    console.log(output);
 
-    return new Response(JSON.stringify(output), {
-      headers: { 'Content-Type': 'application/json' } // Optional, but good practice for clarity
-  });
-  
-  } catch (error) {
-    console.error("[MUSIC_ERROR]", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
+    // Check if audio generation was successful
+    if (!audioGeneration) {
+      return new Response(
+        JSON.stringify({ error: "Audio generation failed" }),
+        { status: 400 }
+      );
+    }
+
+    console.log("AudioGeneration:", audioGeneration);
+    console.log(typeof audioGeneration);
+    console.log(Object.keys(audioGeneration));
+
+    //  const readableStream =  (audioGeneration as any).readable;
+
+    const chunks: Buffer[] = [];
+    for await (const chunk of audioGeneration) {
+      chunks.push(chunk);
+    }
+
+    const content = Buffer.concat(chunks);
+
+    return new Response(content, {
+      status: 200,
+      headers: { "Content-Type": "audio/mpeg" },
     });
+  } catch (error) {
+    console.error("Error processing the request:", error);
+    return new Response(
+      JSON.stringify({
+        error: "An error occurred while processing the request",
+      }),
+      { status: 500 }
+    );
   }
 }

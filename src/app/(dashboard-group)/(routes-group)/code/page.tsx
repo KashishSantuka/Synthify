@@ -16,7 +16,7 @@ import { useState } from "react";
 import Empty from "@/components/Empty";
 import Loader from "@/components/Loader";
 import { cn } from "@/lib/utils";
-import UserAvatar from "@/components/UserAvatar";
+import { toast } from "react-hot-toast";
 import BotAvatar from "@/components/BotAvatar";
 import ReactMarkdown from "react-markdown";
 
@@ -30,6 +30,13 @@ const CodePage = () => {
       prompt: "",
     },
   });
+
+  interface Message {
+    role: string;
+    content: {
+      parts: Array<{ text: string }>;
+    };
+  }
 
   const isLoading = form.formState.isSubmitting;
 
@@ -46,27 +53,35 @@ const CodePage = () => {
         messages: newMessages,
       });
 
-      const extractedMessages = response.data.messages
-      .filter((message: any) => message.role === "user") // Keep only messages with role "user"
-      .map((message: any) => {
-        return {
-          role: message.role,
-          content: message.content.parts[0]?.text, // Safely access the first part's text
+      if (!response) {
+        const error = {
+          message: "Didn't Receive The Response",
+          status: 400,
         };
-      });
 
-    console.log("extractedMessages", extractedMessages);
+        throw error;
+      }
 
-    setMessages((current) => [
-      ...current,
-      newMessages,
-      ...extractedMessages, // Add all extracted messages to the state
-    ]);
+      const extractedMessages = response.data.messages
+        .filter((message: Message) => message.role === "user") // Keep only messages with role "user"
+        .map((message: Message) => {
+          return {
+            role: message.role,
+            content: message.content.parts[0]?.text, // Safely access the first part's text
+          };
+        });
 
+      console.log("extractedMessages", extractedMessages);
+
+      setMessages((current) => [
+        ...current,
+        newMessages,
+        ...extractedMessages, // Add all extracted messages to the state
+      ]);
 
       form.reset();
     } catch (error) {
-      //TODO: Open Pro Model;
+      toast.error("Something wen wrong");
       console.log(error);
     } finally {
       router.refresh();
@@ -133,11 +148,11 @@ const CodePage = () => {
                     : "bg-muted"
                 )}
               >
-                {message.role === "user" && <BotAvatar /> }
+                {message.role === "user" && <BotAvatar />}
 
                 <ReactMarkdown
                   components={{
-                    pre: ({ node, ...props }) => (
+                    pre: ({ ...props }) => (
                       <div className="overflow-auto w-full my-2 bg-black/10 p-2 rounded-lg">
                         <pre {...props} />
                       </div>
