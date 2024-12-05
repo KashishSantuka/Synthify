@@ -8,7 +8,6 @@ import {
   ArrowRight,
   ImageIcon,
   Music,
-  VideoIcon,
   Code,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -35,13 +34,7 @@ const tools = [
     bgColor: "bg-emerald-400/10",
     href: "/music",
   },
-  {
-    label: "Video Generation",
-    icon: VideoIcon,
-    color: "text-orange-700",
-    bgColor: "bg-orange-700/10",
-    href: "/video",
-  },
+
   {
     label: "Code Generation",
     icon: Code,
