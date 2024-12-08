@@ -28,17 +28,13 @@ export async function POST(req: Request) {
         headers: {
           // "Content-Type": "application/json",
           "x-api-key":
-            "8adf722a637564bd6cef3f219bcdd8ae425423a4db80c09f886e482c53c55369190ab8f5f8313ae3bcb065d4629d5478",
+            process.env.CLIP_DROP_KEY,
         },
-        responseType: 'arraybuffer',  }
+        responseType: "arraybuffer",
+      }
     );
 
-
-    // console.log("textImg");
-    // console.log(textImg);
-    // console.log("-------------------------");
-
-    const base64Image = Buffer.from(textImg.data, 'binary').toString('base64');
+    const base64Image = Buffer.from(textImg.data, "binary").toString("base64");
 
     //   const responseData = await axios.post(
     //     `${context.bap_uri}/${response.context.action}`,
@@ -79,7 +75,7 @@ export async function POST(req: Request) {
     // console.log("ImageArray:", imageUrl);
 
     return new Response(
-      JSON.stringify({ imageResponse: `data:image/png;base64,${base64Image}` }), 
+      JSON.stringify({ imageResponse: `data:image/png;base64,${base64Image}` }),
       { status: 200 }
     );
   } catch (error) {
