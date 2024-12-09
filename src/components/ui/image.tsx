@@ -7,7 +7,7 @@ export const Logo = () => {
       <Image
         fill
         alt="Logo"
-        src="/logo.png" // Ensure the image path is correct
+        src="/Logo.png" // Ensure the image path is correct
         style={{ objectFit: "cover" }} // Optional: ensures the image covers the area
       />
     </div>

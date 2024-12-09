@@ -21,7 +21,7 @@ const LandingNavbar = () => {
     <nav className="px-1 py-4 bg-transparent w-full flex  justify-betweem">
       <Link href="/" className="flex items-center ">
         <div className="relative h-8 w-8 mr-2">
-          <Image fill alt="Logo" src="/logo.png" />
+          <Image fill alt="Logo" src="/Logo.png" />
         </div>
         <h1 className={cn("text-2xl font-bold text-white", font.className)}>
           Synthify
