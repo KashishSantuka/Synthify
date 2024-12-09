@@ -117,7 +117,7 @@ const ImagePage = () => {
             {images && (
               <Card className="rounded-lg overflow-hidden">
                 <div className="relative aspect-square">
-                  <Image alt="Generated Image" fill src={images}  />
+                  <Image alt="Generated Image" fill src={images} unoptimized />
                 </div>
                 <CardFooter className="p-2">
                   <Button
