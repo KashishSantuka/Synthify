@@ -5,6 +5,7 @@ dotenv.config();
 
 const client = new ElevenLabsClient({ apiKey: process.env.ELEVEN_KEY });
 
+console.log("client");
 console.log(client);
 
 if (!client) {
